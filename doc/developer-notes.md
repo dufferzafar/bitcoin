@@ -175,7 +175,7 @@ profiling. The repo contains a Valgrind suppressions file
 which includes known Valgrind warnings in our dependencies that cannot be fixed
 in-tree. Example use:
 
-```shell
+```bash
 $ valgrind --suppressions=contrib/valgrind.supp src/test/test_bitcoin
 $ valgrind --suppressions=contrib/valgrind.supp --leak-check=full \
       --show-leak-kinds=all src/test/test_bitcoin --log_level=test_suite
@@ -190,7 +190,7 @@ on Debian/Ubuntu).
 
 To enable LCOV report generation during test runs:
 
-```shell
+```bash
 ./configure --enable-lcov
 make
 make cov

@@ -39,13 +39,13 @@ from ports, for the same reason as boost above (g++/libstd++ incompatibility).
 If you have to build it yourself, you can use [the installation script included
 in contrib/](/contrib/install_db4.sh) like so
 
-```shell
+```bash
 ./contrib/install_db4.sh `pwd` CC=cc CXX=c++
 ```
 
 from the root of the repository. Then set `BDB_PREFIX` for the next section:
 
-```shell
+```bash
 export BDB_PREFIX="$PWD/db4"
 ```
 
