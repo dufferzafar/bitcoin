@@ -699,6 +699,31 @@ protected:
     }
 };
 
+UniValue submitanchor(const JSONRPCRequest& request)
+{
+    // TODO: Help Docstring?
+
+    // Decode raw bytes into a Block
+    std::shared_ptr<CBlock> blockptr = std::make_shared<CBlock>();
+    CBlock& block = *blockptr;
+    if (!DecodeHexBlk(block, request.params[0].get_str())) {
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Anchor decode failed");
+    }
+
+    if (block.vtx.empty() || !block.vtx[0]->IsCoinBase()) {
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Anchor does not start with a coinbase");
+    }
+
+    // TODO: Error if Anchor contains any more transactions
+
+    // Print hash of the incoming block
+    uint256 hash = block.GetHash();
+
+    std::cout << block.ToString();
+
+    return "submitanchor working!";
+}
+
 UniValue submitblock(const JSONRPCRequest& request)
 {
     // We allow 2 arguments for compliance with BIP22. Argument 2 is ignored.
@@ -982,6 +1007,7 @@ static const CRPCCommand commands[] =
     { "mining",             "prioritisetransaction",  &prioritisetransaction,  {"txid","dummy","fee_delta"} },
     { "mining",             "getblocktemplate",       &getblocktemplate,       {"template_request"} },
     { "mining",             "submitblock",            &submitblock,            {"hexdata","dummy"} },
+    { "mining",             "submitanchor",           &submitanchor,           {"hexdata","dummy"} },
 
 
     { "generating",         "generatetoaddress",      &generatetoaddress,      {"nblocks","address","maxtries"} },
