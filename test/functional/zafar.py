@@ -108,5 +108,23 @@ class SubmitBlocks(BitcoinTestFramework):
         # assert(False)
 
 
+class SubmitAnchors(BitcoinTestFramework):
+
+    def set_test_params(self):
+        # TODO: Test why it doesn't work with a single node
+        self.num_nodes = 2
+        self.setup_clean_chain = False
+
+    def run_test(self):
+        node = self.nodes[0]
+
+        node.generate(1)
+        tmpl = node.getblocktemplate()
+
+        block = new_block(tmpl, 1)
+        rsp = node.submitanchor(b2x(block.serialize()))
+
+        print(rsp)
+
 if __name__ == '__main__':
-    SubmitBlocks().main()
+    SubmitAnchors().main()
