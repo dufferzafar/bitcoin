@@ -73,6 +73,12 @@ class TestNode():
 
         self.p2ps = []
 
+
+    def __repr__(self):
+        run = "Running" if self.running else "Stopped"
+        r = (self.index, run, self.datadir)
+        return "<TestNode %d: %s ; %s>" % r
+
     def __getattr__(self, name):
         """Dispatches any unrecognised messages to the RPC connection or a CLI instance."""
         if self.use_cli:
