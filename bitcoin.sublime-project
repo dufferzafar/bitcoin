@@ -19,6 +19,9 @@
 			"folder_exclude_patterns":
 			[
 				"_Help/**",
+				".deps",
+				"locale",
+
 			],
 			"path": "."
 		}
