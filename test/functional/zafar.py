@@ -2,6 +2,8 @@
 
 """Boilerplate copied from mining_basic.py."""
 
+from pprint import pprint
+
 from binascii import b2a_hex
 
 from test_framework.blocktools import create_coinbase
@@ -45,7 +47,7 @@ def new_block(tmpl, ht=1):
     block.hashMerkleRoot = block.calc_merkle_root()
 
     # Proof of work happens here
-    # block.solve()
+    block.solve()
 
     return block
 
@@ -68,7 +70,6 @@ class SubmitBlocks(BitcoinTestFramework):
         # NOTE: Look into why nodes start with an initial block count of 200?
         rsp = node.getblockcount()
         self.log.info("count: at start: %d" % rsp)
-        # print(rsp)
 
         # NOTE: Mine a block to leave initial block download ?
         node.generate(1)
@@ -76,7 +77,6 @@ class SubmitBlocks(BitcoinTestFramework):
         self.log.info("count: after mining one: %d" % rsp)
 
         tmpl = node.getblocktemplate()
-        # print(tmpl)
 
         block = new_block(tmpl, 1)
         rsp = node.submitblock(b2x(block.serialize()))
@@ -85,23 +85,15 @@ class SubmitBlocks(BitcoinTestFramework):
 
         self.log.info("count: after proposing first from outside: %d" % rsp)
 
-        block = new_block(tmpl, 2)
+        # block = new_block(tmpl, 2)
         # print(block.hash)
 
-        # Proposal mode is optional
-        # Allows a miner, usually a part of the pool, to see if the block is valid
-        # rsp = node.getblocktemplate(
-        #     {'data': b2x(block.serialize()), 'mode': 'proposal'}
-        # )
-        # print(rsp)
+        # rsp = node.submitblock(b2x(block.serialize()))
+        # rsp = node.getblockcount()
+        # self.log.info("count: after proposing second from outside: %d" % rsp)
 
-        rsp = node.submitblock(b2x(block.serialize()))
-        rsp = node.getblockcount()
-        self.log.info("count: after proposing second from outside: %d" % rsp)
-
-        # rsp = node.getblock(block.hash)
-        # print(rsp)
-        # print()
+        rsp = node.getblockheader(block.hash)
+        pprint(rsp)
 
         print()
 
@@ -121,10 +113,35 @@ class SubmitAnchors(BitcoinTestFramework):
         node.generate(1)
         tmpl = node.getblocktemplate()
 
-        block = new_block(tmpl, 1)
-        rsp = node.submitanchor(b2x(block.serialize()))
+        # Add a block
+        # block = new_block(tmpl, 1)
+        # rsp = node.submitblock(b2x(block.serialize()))
 
-        print(rsp)
+        cw = node.getblockheader(tmpl["previousblockhash"])["chainwork"]
+        print("Chainwork, before: ", cw)
+
+        block = new_block(tmpl, 1)
+        node.submitanchor(b2x(block.serialize()))
+
+        cw = node.getblockheader(tmpl["previousblockhash"])["chainwork"]
+        print("Chainwork, after : ", cw)
+
+        # Ask the other node, what the state is
+        node = self.nodes[1]
+        tmpl = node.getblocktemplate()
+
+        cw = node.getblockheader(tmpl["previousblockhash"])["chainwork"]
+        print("Chainwork, node 1: ", cw)
+
+        # rsp = node.submitanchor(b2x(block.serialize()))
+        # block = new_block(tmpl, 3)
+        # rsp = node.submitanchor(b2x(block.serialize()))
+        # block = new_block(tmpl, 4)
+        # rsp = node.submitanchor(b2x(block.serialize()))
+
+        # print(rsp)
+
 
 if __name__ == '__main__':
+    # SubmitBlocks().main()
     SubmitAnchors().main()
