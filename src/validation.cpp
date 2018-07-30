@@ -3397,6 +3397,30 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
     return true;
 }
 
+// Find the block pointed to by the anchor and update its ChainWork
+bool ProcessNewAnchor(const CBlockHeader &anchor)
+{
+    auto mi = mapBlockIndex.find(anchor.hashPrevBlock);
+    if (mi == mapBlockIndex.end())
+        return false;
+
+    // Block pointed to by the anchor
+    CBlockIndex* bindex = mi->second;
+
+    // GetBlockProof works only on CBlockIndex while we have a CBlockHeader
+    CBlockIndex* aindex = new CBlockIndex(anchor);
+
+    bindex->nChainWork += GetBlockProof(*aindex);
+
+    delete aindex;
+
+    // Iterate over the tree & update nChainWork of all descendents
+    // Bad idea: iterate over entire mapBlockIndex
+    // Other ideas?
+
+    return true
+}
+
 bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<const CBlock> pblock, bool fForceProcessing, bool *fNewBlock)
 {
     AssertLockNotHeld(cs_main);
