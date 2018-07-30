@@ -716,12 +716,19 @@ UniValue submitanchor(const JSONRPCRequest& request)
 
     // TODO: Error if Anchor contains any more transactions
 
-    // Print hash of the incoming block
     uint256 hash = block.GetHash();
 
-    std::cout << block.ToString();
+    // Check if Anchor is duplicate
+    if (mapAnchors.count(hash)) {
+        return "anchor-duplicate";
+    }
 
-    return "submitanchor working!";
+    // Insert this anchor into the map
+    mapAnchors[hash] = std::make_pair(block.hashPrevBlock, block.nBits);
+
+    ProcessNewAnchor(block.GetBlockHeader());
+
+    return "anchor-accepted";
 }
 
 UniValue submitblock(const JSONRPCRequest& request)
