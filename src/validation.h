@@ -154,6 +154,9 @@ struct BlockHasher
     size_t operator()(const uint256& hash) const { return hash.GetCheapHash(); }
 };
 
+// Anchor Hash -> (Parent Hash, Target Bits [difficulty])
+extern std::map<uint256, std::pair<uint256, uint32_t>> mapAnchors;
+
 extern CScript COINBASE_FLAGS;
 extern CCriticalSection cs_main;
 extern CBlockPolicyEstimator feeEstimator;

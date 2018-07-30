@@ -196,6 +196,8 @@ private:
 } g_chainstate;
 
 
+// TODO: Move to CChainState? Private?
+std::map<uint256, std::pair<uint256, uint32_t>> mapAnchors;
 
 CCriticalSection cs_main;
 
@@ -351,7 +353,7 @@ bool CheckSequenceLocks(const CTransaction &tx, int flags, LockPoints* lp, bool 
 
     CBlockIndex* tip = chainActive.Tip();
     assert(tip != nullptr);
-    
+
     CBlockIndex index;
     index.pprev = tip;
     // CheckSequenceLocks() uses chainActive.Height()+1 to evaluate
