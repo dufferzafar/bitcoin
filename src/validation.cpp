@@ -2798,6 +2798,11 @@ CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
         pindexNew->pprev = (*miPrev).second;
         pindexNew->nHeight = pindexNew->pprev->nHeight + 1;
         pindexNew->BuildSkip();
+
+        // Add myself as a child of my parent
+        pindexNew->pprev->children.push_back(pindexNew);
+
+        std::cout << "AddToBlockIndex: " << hash.ToString() << std::endl;
     }
     pindexNew->nTimeMax = (pindexNew->pprev ? std::max(pindexNew->pprev->nTimeMax, pindexNew->nTime) : pindexNew->nTime);
     pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + GetBlockProof(*pindexNew);
@@ -3414,11 +3419,9 @@ bool ProcessNewAnchor(const CBlockHeader &anchor)
 
     delete aindex;
 
-    // Iterate over the tree & update nChainWork of all descendents
-    // Bad idea: iterate over entire mapBlockIndex
-    // Other ideas?
+    std::cout << "Block pointed to by Anchor: " << bindex->ToString() << endl;
 
-    return true
+    return true;
 }
 
 bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<const CBlock> pblock, bool fForceProcessing, bool *fNewBlock)

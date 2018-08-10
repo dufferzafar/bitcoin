@@ -176,6 +176,9 @@ public:
     //! pointer to the index of the predecessor of this block
     CBlockIndex* pprev;
 
+    // ! pointers to the children of this block
+    std::vector<CBlockIndex*> children;
+
     //! pointer to the index of some further predecessor of this block
     CBlockIndex* pskip;
 
@@ -322,10 +325,11 @@ public:
 
     std::string ToString() const
     {
-        return strprintf("CBlockIndex(pprev=%p, nHeight=%d, merkle=%s, hashBlock=%s)",
+        return strprintf("CBlockIndex(pprev=%p, nHeight=%d, merkle=%s, hashBlock=%s, children=%d)",
             pprev, nHeight,
             hashMerkleRoot.ToString(),
-            GetBlockHash().ToString());
+            GetBlockHash().ToString(),
+            children.size());
     }
 
     //! Check whether this block index entry is valid up to the passed validity level.
