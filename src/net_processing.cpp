@@ -2305,6 +2305,10 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         {
         LOCK(cs_main);
 
+        // Parent of this block was not found in my blockchain
+        // So we won't add this block to our chain
+        // But we ask the sender for their blockchain state
+        // in case we're lagging behind
         if (mapBlockIndex.find(cmpctblock.header.hashPrevBlock) == mapBlockIndex.end()) {
             // Doesn't connect (or is genesis), instead of DoSing in AcceptBlockHeader, request deeper headers
             if (!IsInitialBlockDownload())
@@ -2319,6 +2323,9 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
         const CBlockIndex *pindex = nullptr;
         CValidationState state;
+
+        // ProcessNewBlockHeaders() -> AcceptBlockHeader() -> AddToBlockIndex()
+        // If adding failed for some reason, prevent against DOS
         if (!ProcessNewBlockHeaders({cmpctblock.header}, state, chainparams, &pindex)) {
             int nDoS;
             if (state.IsInvalid(nDoS)) {
