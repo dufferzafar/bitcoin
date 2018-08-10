@@ -2,6 +2,8 @@
 
 """Boilerplate copied from mining_basic.py."""
 
+import random
+
 from pprint import pprint
 
 from binascii import b2a_hex
@@ -39,7 +41,7 @@ def new_block(tmpl, ht=1):
     block.hashPrevBlock = int(tmpl["previousblockhash"], 16)
     block.nTime = tmpl["curtime"]
     block.nBits = int(tmpl["bits"], 16)
-    block.nNonce = 0
+    block.nNonce = random.randint(1, 100)
 
     # Add coinbase to the block
     # TODO: More transactions can be added here
@@ -114,8 +116,8 @@ class SubmitAnchors(BitcoinTestFramework):
         tmpl = node.getblocktemplate()
 
         # Add a block
-        # block = new_block(tmpl, 1)
-        # rsp = node.submitblock(b2x(block.serialize()))
+        block = new_block(tmpl, 1)
+        node.submitblock(b2x(block.serialize()))
 
         cw = node.getblockheader(tmpl["previousblockhash"])["chainwork"]
         print("Chainwork, before: ", cw)
@@ -140,6 +142,8 @@ class SubmitAnchors(BitcoinTestFramework):
         # rsp = node.submitanchor(b2x(block.serialize()))
 
         # print(rsp)
+
+        # assert False
 
 
 if __name__ == '__main__':
