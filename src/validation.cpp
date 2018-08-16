@@ -42,6 +42,7 @@
 
 #include <future>
 #include <sstream>
+#include <deque>
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -3419,7 +3420,37 @@ bool ProcessNewAnchor(const CBlockHeader &anchor)
 
     delete aindex;
 
-    std::cout << "Block pointed to by Anchor: " << bindex->ToString() << endl;
+    std::cout << "Block pointed to by Anchor: " << bindex->ToString() << std::endl;
+
+    // Update nChainWork of all descendants using a BFS over the tree
+    // Traversal begins at the node that the anchor points to
+    std::deque<CBlockIndex*> Q;
+    Q.push_back(bindex);
+
+    CBlockIndex* node;
+
+    while( ! Q.empty() ) {
+        node = Q.front(); Q.pop_front();
+
+        // Update the nChainWork of this node
+        node->nChainWork = node->pprev->nChainWork + GetBlockProof(*node);
+
+        // Insert all children at the end of the queue
+        Q.insert(Q.end(), node->children.begin(), node->children.end());
+    }
+
+    // Let signal handlers know that a new anchor has been found
+    // Used to propagate this anchor to the restof the network
+    // GetMainSignals().AnchorConnected(pindex, panchor);
+
+    // TODO: ActivateBestChain()
+    //
+    // Get a CBlock from a CBlockIndex
+    // pblock = <shared_ptr> to bindex's block?
+    //
+    // CValidationState state;
+    // if (!g_chainstate.ActivateBestChain(state, chainparams, pblock))
+    //     return error("%s: ActivateBestChain failed", __func__);
 
     return true;
 }
