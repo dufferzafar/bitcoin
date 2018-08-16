@@ -705,18 +705,18 @@ UniValue submitanchor(const JSONRPCRequest& request)
 
     // Decode raw bytes into a Block
     std::shared_ptr<CBlock> blockptr = std::make_shared<CBlock>();
-    CBlock& block = *blockptr;
-    if (!DecodeHexBlk(block, request.params[0].get_str())) {
+    CBlock& anchor = *blockptr;
+    if (!DecodeHexBlk(anchor, request.params[0].get_str())) {
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Anchor decode failed");
     }
 
-    if (block.vtx.empty() || !block.vtx[0]->IsCoinBase()) {
+    if (anchor.vtx.empty() || !anchor.vtx[0]->IsCoinBase()) {
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Anchor does not start with a coinbase");
     }
 
     // TODO: Error if Anchor contains any more transactions
 
-    uint256 hash = block.GetHash();
+    uint256 hash = anchor.GetHash();
 
     // Check if Anchor is duplicate
     if (mapAnchors.count(hash)) {
@@ -724,9 +724,12 @@ UniValue submitanchor(const JSONRPCRequest& request)
     }
 
     // Insert this anchor into the map
-    mapAnchors[hash] = std::make_pair(block.hashPrevBlock, block.nBits);
+    mapAnchors[hash] = std::make_pair(anchor.hashPrevBlock, anchor.nBits);
 
-    ProcessNewAnchor(block.GetBlockHeader());
+    // submitblock_StateCatcher sc(anchor.GetHash());
+    // RegisterValidationInterface(&sc);
+    ProcessNewAnchor(anchor.GetBlockHeader());
+    // UnregisterValidationInterface(&sc);
 
     return "anchor-accepted";
 }
