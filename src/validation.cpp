@@ -3404,9 +3404,11 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
 }
 
 // Find the block pointed to by the anchor and update its ChainWork
-bool ProcessNewAnchor(const CBlockHeader &anchor)
+bool ProcessNewAnchor(const CBlock &panchor)
 {
-    auto mi = mapBlockIndex.find(anchor.hashPrevBlock);
+    auto mi = mapBlockIndex.find(panchor.hashPrevBlock);
+
+    // Return if we haven't heard of the block pointed by anchor
     if (mi == mapBlockIndex.end())
         return false;
 
@@ -3414,7 +3416,7 @@ bool ProcessNewAnchor(const CBlockHeader &anchor)
     CBlockIndex* bindex = mi->second;
 
     // GetBlockProof works only on CBlockIndex while we have a CBlockHeader
-    CBlockIndex* aindex = new CBlockIndex(anchor);
+    CBlockIndex* aindex = new CBlockIndex(panchor);
 
     bindex->nChainWork += GetBlockProof(*aindex);
 
