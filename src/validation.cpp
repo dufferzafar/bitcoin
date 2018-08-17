@@ -3442,8 +3442,10 @@ bool ProcessNewAnchor(const CBlock &panchor)
     }
 
     // Let signal handlers know that a new anchor has been found
-    // Used to propagate this anchor to the restof the network
-    // GetMainSignals().AnchorConnected(pindex, panchor);
+    // Used to propagate this anchor to the rest of the network
+    // TODO: Remove shared_panchor? What could go wrong?
+    std::shared_ptr<const CBlock> shared_panchor = std::make_shared<const CBlock>(panchor);
+    GetMainSignals().AnchorConnected(shared_panchor);
 
     // TODO: ActivateBestChain()
     //
