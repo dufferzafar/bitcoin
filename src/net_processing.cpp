@@ -807,6 +807,13 @@ PeerLogicValidation::PeerLogicValidation(CConnman* connmanIn, CScheduler &schedu
     scheduler.scheduleEvery(std::bind(&PeerLogicValidation::CheckForStaleTipAndEvictPeers, this, consensusParams), EXTRA_PEER_CHECK_INTERVAL * 1000);
 }
 
+void PeerLogicValidation::AnchorConnected(const std::shared_ptr<const CBlock>& panchor) {
+
+    std::cout << "PeerLogicValidation::AnchorConnected()" << std::endl;
+
+
+}
+
 void PeerLogicValidation::BlockConnected(const std::shared_ptr<const CBlock>& pblock, const CBlockIndex* pindex, const std::vector<CTransactionRef>& vtxConflicted) {
     LOCK(g_cs_orphans);
 
