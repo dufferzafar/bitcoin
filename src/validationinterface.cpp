@@ -154,6 +154,7 @@ void CMainSignals::TransactionAddedToMempool(const CTransactionRef &ptx) {
     });
 }
 
+// TODO: Look at how the Process Queue works
 void CMainSignals::AnchorConnected(const std::shared_ptr<const CBlock> &panchor) {
     m_internals->m_schedulerClient.AddToProcessQueue([panchor, this] {
         m_internals->AnchorConnected(panchor);

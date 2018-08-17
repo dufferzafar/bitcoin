@@ -811,6 +811,12 @@ void PeerLogicValidation::AnchorConnected(const std::shared_ptr<const CBlock>& p
 
     std::cout << "PeerLogicValidation::AnchorConnected()" << std::endl;
 
+    // Forward this anchor to all neighbors
+    // connman->ForEachNode([this, &panchor](CNode* pnode) {
+    //
+    // TODO: Log the call?
+    //
+    // });
 
 }
 

@@ -177,6 +177,7 @@ public:
     CBlockIndex* pprev;
 
     // ! pointers to the children of this block
+    // TODO: Convert these to a set? to deal with duplicate AddToBlockIndex calls?
     std::vector<CBlockIndex*> children;
 
     //! pointer to the index of some further predecessor of this block

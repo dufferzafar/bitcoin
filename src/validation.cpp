@@ -2777,6 +2777,7 @@ bool ResetBlockFailureFlags(CBlockIndex *pindex) {
     return g_chainstate.ResetBlockFailureFlags(pindex);
 }
 
+// TODO: Investigate why this is being called twice
 CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
 {
     // Check for duplicate
@@ -3459,6 +3460,7 @@ bool ProcessNewAnchor(const CBlock &panchor)
     return true;
 }
 
+// TODO: What is pblock used for?
 bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<const CBlock> pblock, bool fForceProcessing, bool *fNewBlock)
 {
     AssertLockNotHeld(cs_main);
