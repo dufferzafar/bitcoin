@@ -11,6 +11,7 @@
 #include <functional>
 #include <memory>
 
+// Defined here so we don't have to include <primitives/block.h>?
 class CBlock;
 class CBlockIndex;
 struct CBlockLocator;
@@ -78,6 +79,14 @@ protected:
      * Called on a background thread.
      */
     virtual void TransactionRemovedFromMempool(const CTransactionRef &ptx) {}
+
+    /**
+     * Notifies listeners of an anchor being connected.
+     *
+     * Called on a background thread ?
+     */
+    virtual void AnchorConnected(const std::shared_ptr<const CBlock> &anchor) {}
+
     /**
      * Notifies listeners of a block being connected.
      * Provides a vector of transactions evicted from the mempool as a result.
@@ -150,6 +159,7 @@ public:
 
     void UpdatedBlockTip(const CBlockIndex *, const CBlockIndex *, bool fInitialDownload);
     void TransactionAddedToMempool(const CTransactionRef &);
+    void AnchorConnected(const std::shared_ptr<const CBlock> &);
     void BlockConnected(const std::shared_ptr<const CBlock> &, const CBlockIndex *pindex, const std::shared_ptr<const std::vector<CTransactionRef>> &);
     void BlockDisconnected(const std::shared_ptr<const CBlock> &);
     void SetBestChain(const CBlockLocator &);
