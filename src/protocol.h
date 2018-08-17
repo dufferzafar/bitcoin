@@ -127,6 +127,12 @@ extern const char *TX;
  */
 extern const char *HEADERS;
 /**
+ * The anchor message transmits a single serialized anchor.
+ * Sent whenever an anchor is received
+ * This doesn't follow the semantics of other bitcoin protocol messages.
+ */
+extern const char *ANCHOR;
+/**
  * The block message transmits a single serialized block.
  * @see https://bitcoin.org/en/developer-reference#block
  */
