@@ -811,12 +811,15 @@ void PeerLogicValidation::AnchorConnected(const std::shared_ptr<const CBlock>& p
 
     std::cout << "PeerLogicValidation::AnchorConnected()" << std::endl;
 
+    const CNetMsgMaker msgMaker(PROTOCOL_VERSION);
+
     // Forward this anchor to all neighbors
-    // connman->ForEachNode([this, &panchor](CNode* pnode) {
-    //
-    // TODO: Log the call?
-    //
-    // });
+    connman->ForEachNode([this, &panchor, &msgMaker](CNode* pnode) {
+        connman->PushMessage(pnode, msgMaker.Make(NetMsgType::ANCHOR, *panchor));
+
+        LogPrint(BCLog::NET, "%s sending anchor %s to peer=%d\n", "PeerLogicValidation::AnchorConnected",
+                    panchor->GetHash().ToString(), pnode->GetId());
+    });
 
 }
 
