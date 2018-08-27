@@ -3405,7 +3405,7 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
 }
 
 // Find the block pointed to by the anchor and update its ChainWork
-bool ProcessNewAnchor(const CBlock &panchor)
+bool ProcessNewAnchor(const CChainParams& chainparams, const CBlock &panchor)
 {
     auto mi = mapBlockIndex.find(panchor.hashPrevBlock);
 
@@ -3448,14 +3448,10 @@ bool ProcessNewAnchor(const CBlock &panchor)
     std::shared_ptr<const CBlock> shared_panchor = std::make_shared<const CBlock>(panchor);
     GetMainSignals().AnchorConnected(shared_panchor);
 
-    // TODO: ActivateBestChain()
-    //
-    // Get a CBlock from a CBlockIndex
-    // pblock = <shared_ptr> to bindex's block?
-    //
-    // CValidationState state;
-    // if (!g_chainstate.ActivateBestChain(state, chainparams, pblock))
-    //     return error("%s: ActivateBestChain failed", __func__);
+    // Receiving an anchor may update the best chain
+    CValidationState state;
+    if (!g_chainstate.ActivateBestChain(state, chainparams, nullptr))
+        return error("%s: ActivateBestChain failed", __func__);
 
     return true;
 }

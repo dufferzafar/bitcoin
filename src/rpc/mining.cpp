@@ -728,7 +728,7 @@ UniValue submitanchor(const JSONRPCRequest& request)
 
     // submitblock_StateCatcher sc(anchor.GetHash());
     // RegisterValidationInterface(&sc);
-    ProcessNewAnchor(anchor);
+    ProcessNewAnchor(Params(), anchor);
     // UnregisterValidationInterface(&sc);
 
     return "anchor-accepted";
