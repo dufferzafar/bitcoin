@@ -3405,9 +3405,9 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
 }
 
 // Find the block pointed to by the anchor and update its ChainWork
-bool ProcessNewAnchor(const CChainParams& chainparams, const CBlock &panchor)
+bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<const CBlock> panchor)
 {
-    auto mi = mapBlockIndex.find(panchor.hashPrevBlock);
+    auto mi = mapBlockIndex.find(panchor->hashPrevBlock);
 
     // Return if we haven't heard of the block pointed by anchor
     if (mi == mapBlockIndex.end())
@@ -3417,7 +3417,7 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const CBlock &panchor)
     CBlockIndex* bindex = mi->second;
 
     // GetBlockProof works only on CBlockIndex while we have a CBlockHeader
-    CBlockIndex* aindex = new CBlockIndex(panchor);
+    CBlockIndex* aindex = new CBlockIndex(*panchor);
 
     bindex->nChainWork += GetBlockProof(*aindex);
 
@@ -3444,9 +3444,7 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const CBlock &panchor)
 
     // Let signal handlers know that a new anchor has been found
     // Used to propagate this anchor to the rest of the network
-    // TODO: Remove shared_panchor? What could go wrong?
-    std::shared_ptr<const CBlock> shared_panchor = std::make_shared<const CBlock>(panchor);
-    GetMainSignals().AnchorConnected(shared_panchor);
+    GetMainSignals().AnchorConnected(panchor);
 
     // Receiving an anchor may update the best chain
     CValidationState state;

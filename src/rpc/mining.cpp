@@ -704,8 +704,8 @@ UniValue submitanchor(const JSONRPCRequest& request)
     // TODO: Help Docstring?
 
     // Decode raw bytes into a Block
-    std::shared_ptr<CBlock> blockptr = std::make_shared<CBlock>();
-    CBlock& anchor = *blockptr;
+    std::shared_ptr<CBlock> panchor = std::make_shared<CBlock>();
+    CBlock& anchor = *panchor;
     if (!DecodeHexBlk(anchor, request.params[0].get_str())) {
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Anchor decode failed");
     }
@@ -716,20 +716,17 @@ UniValue submitanchor(const JSONRPCRequest& request)
 
     // TODO: Error if Anchor contains any more transactions
 
-    uint256 hash = anchor.GetHash();
-
     // Check if Anchor is duplicate
-    if (mapAnchors.count(hash)) {
+    if (mapAnchors.count(anchor.GetHash()))
         return "anchor-duplicate";
-    }
 
     // Insert this anchor into the map
-    mapAnchors[hash] = std::make_pair(anchor.hashPrevBlock, anchor.nBits);
+    mapAnchors[anchor.GetHash()] = std::make_pair(anchor.hashPrevBlock, anchor.nBits);
 
-    // submitblock_StateCatcher sc(anchor.GetHash());
-    // RegisterValidationInterface(&sc);
-    ProcessNewAnchor(Params(), anchor);
-    // UnregisterValidationInterface(&sc);
+    submitblock_StateCatcher sc(anchor.GetHash());
+    RegisterValidationInterface(&sc);
+        ProcessNewAnchor(Params(), panchor);
+    UnregisterValidationInterface(&sc);
 
     return "anchor-accepted";
 }
