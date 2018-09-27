@@ -2674,6 +2674,23 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         }
     }
 
+    else if (strCommand == NetMsgType::ANCHOR)
+    {
+        std::shared_ptr<CBlock> panchor = std::make_shared<CBlock>();
+        vRecv >> *panchor;
+
+        LogPrint(BCLog::NET, "received anchor %s peer=%d\n", panchor->GetHash().ToString(), pfrom->GetId());
+
+        // Check if Anchor is duplicate
+        if (mapAnchors.count(panchor->GetHash())) {
+            LogPrint(BCLog::NET, "anchor is duplicate %s peer=%d\n", panchor->GetHash().ToString(), pfrom->GetId());
+        } else {
+            // Insert this anchor into the map
+            mapAnchors[panchor->GetHash()] = std::make_pair(panchor->hashPrevBlock, panchor->nBits);
+
+            ProcessNewAnchor(chainparams, panchor);
+        }
+    }
 
     else if (strCommand == NetMsgType::GETADDR)
     {
