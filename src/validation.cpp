@@ -2777,7 +2777,6 @@ bool ResetBlockFailureFlags(CBlockIndex *pindex) {
     return g_chainstate.ResetBlockFailureFlags(pindex);
 }
 
-// TODO: Investigate why this is being called twice
 CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
 {
     // Check for duplicate
@@ -2804,7 +2803,7 @@ CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
         // Add myself as a child of my parent
         pindexNew->pprev->children.push_back(pindexNew);
 
-        std::cout << "AddToBlockIndex: " << hash.ToString() << std::endl;
+        // std::cout << "AddToBlockIndex: " << hash.ToString() << std::endl;
     }
     pindexNew->nTimeMax = (pindexNew->pprev ? std::max(pindexNew->pprev->nTimeMax, pindexNew->nTime) : pindexNew->nTime);
     pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + GetBlockProof(*pindexNew);
@@ -3423,7 +3422,7 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
 
     delete aindex;
 
-    std::cout << "Block pointed to by Anchor: " << bindex->ToString() << std::endl;
+    // std::cout << "Block pointed to by Anchor: " << bindex->ToString() << std::endl;
 
     // Update nChainWork of all descendants using a BFS over the tree
     // Traversal begins at the node that the anchor points to

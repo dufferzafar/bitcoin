@@ -809,7 +809,7 @@ PeerLogicValidation::PeerLogicValidation(CConnman* connmanIn, CScheduler &schedu
 
 void PeerLogicValidation::AnchorConnected(const std::shared_ptr<const CBlock>& panchor) {
 
-    std::cout << "PeerLogicValidation::AnchorConnected()" << std::endl;
+    // std::cout << "PeerLogicValidation::AnchorConnected()" << std::endl;
 
     const CNetMsgMaker msgMaker(PROTOCOL_VERSION);
 
