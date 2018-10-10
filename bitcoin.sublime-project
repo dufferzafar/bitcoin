@@ -20,20 +20,24 @@
 			[
 				"_Help/**",
 				".deps",
-				"locale",
-
+				"locale"
 			],
 			"path": "."
+		},
+		{
+			"path": "/home/dufferzafar/dev/btcnet"
 		}
 	],
-	"settings": {
+	"settings":
+	{
 		"pep257_ignore":
 		[
 			"D100",
 			"D200",
+			"D202",
 			"D208",
 			"D209",
-			"D202",
+			"D212",
 			"D203",
 			"D205",
 			"D211",
@@ -47,6 +51,6 @@
 		[
 			"E501",
 			"E251"
-		],
+		]
 	}
 }
