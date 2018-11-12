@@ -105,7 +105,7 @@ UniValue getnetworkhashps(const JSONRPCRequest& request)
 
 UniValue generateAnchor(std::shared_ptr<CReserveScript> coinbaseScript)
 {
-    std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript, false));
+    std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript, true, false));
 
     if (!pblocktemplate.get())
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new anchor!");
