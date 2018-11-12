@@ -3418,7 +3418,7 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
     // GetBlockProof works only on CBlockIndex while we have a CBlockHeader
     CBlockIndex* aindex = new CBlockIndex(*panchor);
 
-    bindex->nChainWork += GetBlockProof(*aindex);
+    auto anchor_work = GetBlockProof(*aindex);
 
     delete aindex;
 
@@ -3431,11 +3431,14 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
 
     CBlockIndex* node;
 
+    // Standard Breadth First Search
     while( ! Q.empty() ) {
         node = Q.front(); Q.pop_front();
 
         // Update the nChainWork of this node
-        node->nChainWork = node->pprev->nChainWork + GetBlockProof(*node);
+        node->nChainWork += anchor_work;
+
+        LogPrintf("%s: Weight updated of block=%s\n", __func__, node->GetBlockHash().ToString());
 
         // Insert all children at the end of the queue
         Q.insert(Q.end(), node->children.begin(), node->children.end());
