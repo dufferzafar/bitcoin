@@ -127,6 +127,8 @@ UniValue generateAnchor(std::shared_ptr<CReserveScript> coinbaseScript)
     if (!ProcessNewAnchor(Params(), shared_pblock))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
 
+    mapAnchors[pblock->GetHash()] = std::make_pair(pblock->hashPrevBlock, pblock->nBits);
+
     blockHashes.push_back(pblock->GetHash().GetHex());
     return blockHashes;
 }
