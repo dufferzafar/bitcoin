@@ -152,9 +152,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     int nDescendantsUpdated = 0;
 
     if (includeTxns)
-    {
         addPackageTxs(nPackagesSelected, nDescendantsUpdated);
-    }
 
     int64_t nTime1 = GetTimeMicros();
 
