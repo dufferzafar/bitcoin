@@ -3398,13 +3398,10 @@ UniValue generateanchor(const JSONRPCRequest& request)
         return NullUniValue;
     }
 
-    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2) {
+    if (request.fHelp || request.params.size() > 1) {
         throw std::runtime_error(
-            "generateanchor ( blockhash )\n"
+            "generateanchor\n"
             "\nGenerate a new anchor (that pays to an address in the wallet).\n"
-            "\nArguments:\n"
-            "1. blockhash     (optional) Hash of the block that the anchor points to.\n"
-            "                 by default the anchor points to the tip of the current chain."
             "\nResult:\n"
             "[ blockhashes ]     (array) hashes of anchors generated\n"
         );
