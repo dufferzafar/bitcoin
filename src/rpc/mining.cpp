@@ -124,6 +124,9 @@ UniValue generateAnchor(std::shared_ptr<CReserveScript> coinbaseScript)
     }
     std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
 
+    LogPrintf("%s: anchor=%s pointing to block=%s\n", __func__,
+              pblock->GetHash().ToString(), pblock->hashPrevBlock.ToString());
+
     if (!ProcessNewAnchor(Params(), shared_pblock))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
 
@@ -148,7 +151,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
     UniValue blockHashes(UniValue::VARR);
     while (nHeight < nHeightEnd)
     {
-        std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript, false));
+        std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript));
         if (!pblocktemplate.get())
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new block");
         CBlock *pblock = &pblocktemplate->block;
@@ -1045,7 +1048,6 @@ static const CRPCCommand commands[] =
     { "mining",             "getblocktemplate",       &getblocktemplate,       {"template_request"} },
     { "mining",             "submitblock",            &submitblock,            {"hexdata","dummy"} },
     { "mining",             "submitanchor",           &submitanchor,           {"hexdata","dummy"} },
-
 
     { "generating",         "generatetoaddress",      &generatetoaddress,      {"nblocks","address","maxtries"} },
 
