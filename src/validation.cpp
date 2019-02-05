@@ -2806,7 +2806,7 @@ CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
         // std::cout << "AddToBlockIndex: " << hash.ToString() << std::endl;
     }
     pindexNew->nTimeMax = (pindexNew->pprev ? std::max(pindexNew->pprev->nTimeMax, pindexNew->nTime) : pindexNew->nTime);
-    pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + GetBlockProof(*pindexNew);
+    pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + 5 * GetBlockProof(*pindexNew);
     pindexNew->RaiseValidity(BLOCK_VALID_TREE);
     if (pindexBestHeader == nullptr || pindexBestHeader->nChainWork < pindexNew->nChainWork)
         pindexBestHeader = pindexNew;
@@ -3423,8 +3423,8 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
     // GetBlockProof works only on CBlockIndex while we have a CBlockHeader
     CBlockIndex* aindex = new CBlockIndex(*panchor);
 
-    auto anchor_work = GetBlockProof(*aindex);
-
+    // Each anchor contributes 1/10th of what a block contributes
+    auto anchor_work = GetBlockProof(*aindex); anchor_work /= 2;
     delete aindex;
 
     // std::cout << "Block pointed to by Anchor: " << bindex->ToString() << std::endl;
