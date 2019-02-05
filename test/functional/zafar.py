@@ -236,7 +236,11 @@ class CreateForksCpp(BitcoinTestFramework):
         node1 = self.nodes[0]
         node2 = self.nodes[1]
 
-        # node1.generate(1)
+        b0 = node1.generate(1)[0]
+        b0 = node1.getblockheader(b0)
+        cw0 = b0["chainwork"]
+        b0 = b0["hash"]
+        print("parent: ", b0, cw0, int(cw0, 16))
 
         # Both nodes now have same state
 
@@ -261,9 +265,38 @@ class CreateForksCpp(BitcoinTestFramework):
         print("block 2: ", p2, b2, int(cw2, 16))
 
 
+class GenerateAnchorHashes(BitcoinTestFramework):
+
+    def set_test_params(self):
+        self.num_nodes = 3
+        self.setup_clean_chain = False
+
+    def run_test(self):
+        node = self.nodes[0]
+
+        # A small-ish block chain
+        node.generate(1)
+
+        # Successively generate lots of blocks
+        hs = set()
+
+        for _ in range(100):
+            node = random.choice(self.nodes)
+            h = node.generateanchor()[0]
+
+            if h in hs:
+                print("Collision!")
+
+            hs.add(h)
+            print(h)
+            time.sleep(0.5)
+
+
+
 if __name__ == '__main__':
     # SubmitBlocks().main()
     # SubmitAnchors().main()
     # GenerateAnchors().main()
     # CreateForksPy().main()
-    CreateForksCpp().main()
+    # CreateForksCpp().main()
+    GenerateAnchorHashes().main()
