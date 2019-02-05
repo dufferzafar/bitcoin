@@ -3412,6 +3412,11 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
     if (mi == mapBlockIndex.end())
         return false;
 
+    LogPrintf("%s: anchor=%s parent_sha=%s tip=%s chainwork=%.4f\n", __func__,
+              panchor->GetHash().ToString(), panchor->hashPrevBlock.ToString(),
+              chainActive.Tip()->GetBlockHash().ToString(),
+              chainActive.Tip()->nChainWork.getdouble());
+
     // Block pointed to by the anchor
     CBlockIndex* bindex = mi->second;
 
@@ -3435,10 +3440,15 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
     while( ! Q.empty() ) {
         node = Q.front(); Q.pop_front();
 
+        auto nChainWork_before = node->nChainWork;
+
         // Update the nChainWork of this node
         node->nChainWork += anchor_work;
 
-        LogPrintf("%s: Weight updated of block=%s\n", __func__, node->GetBlockHash().ToString());
+        LogPrintf("%s: block=%s before=%.4f after=%.4f\n", __func__,
+                  node->GetBlockHash().ToString(),
+                  nChainWork_before.getdouble(),
+                  node->nChainWork.getdouble());
 
         // Insert all children at the end of the queue
         Q.insert(Q.end(), node->children.begin(), node->children.end());
@@ -3459,6 +3469,11 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
 // TODO: What is pblock used for?
 bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<const CBlock> pblock, bool fForceProcessing, bool *fNewBlock)
 {
+    LogPrintf("%s: block=%s parent_sha=%s tip=%s chainwork=%.4f\n", __func__,
+          pblock->GetHash().ToString(), pblock->hashPrevBlock.ToString(),
+          chainActive.Tip()->GetBlockHash().ToString(),
+          chainActive.Tip()->nChainWork.getdouble());
+
     AssertLockNotHeld(cs_main);
 
     {

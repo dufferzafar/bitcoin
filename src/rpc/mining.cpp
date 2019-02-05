@@ -124,8 +124,10 @@ UniValue generateAnchor(std::shared_ptr<CReserveScript> coinbaseScript)
     }
     std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
 
-    LogPrintf("%s: anchor=%s pointing to block=%s\n", __func__,
-              pblock->GetHash().ToString(), pblock->hashPrevBlock.ToString());
+    LogPrintf("%s: anchor=%s parent_sha=%s tip=%s chainwork=%.4f\n", __func__,
+              pblock->GetHash().ToString(), pblock->hashPrevBlock.ToString(),
+              chainActive.Tip()->GetBlockHash().ToString(),
+              chainActive.Tip()->nChainWork.getdouble());
 
     if (!ProcessNewAnchor(Params(), shared_pblock))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
@@ -170,6 +172,12 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             continue;
         }
         std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
+
+        LogPrintf("%s: block=%s parent_sha=%s tip=%s chainwork=%.4f\n", __func__,
+                  pblock->GetHash().ToString(), pblock->hashPrevBlock.ToString(),
+                  chainActive.Tip()->GetBlockHash().ToString(),
+                  chainActive.Tip()->nChainWork.getdouble());
+
         if (!ProcessNewBlock(Params(), shared_pblock, true, nullptr))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
         ++nHeight;
