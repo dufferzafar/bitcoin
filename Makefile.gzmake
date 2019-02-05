@@ -1,0 +1,10 @@
+# default: run
+
+build:
+	@make
+
+python-test:
+	@test/functional/zafar.py
+
+mydiff:
+    @git diff -b v16.. src/
