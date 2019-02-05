@@ -66,6 +66,8 @@ namespace {
             if (pa->nChainWork > pb->nChainWork) return false;
             if (pa->nChainWork < pb->nChainWork) return true;
 
+            // Add a log line here? Two blocks with equal nChainWork!
+
             // ... then by earliest time received, ...
             if (pa->nSequenceId < pb->nSequenceId) return false;
             if (pa->nSequenceId > pb->nSequenceId) return true;
@@ -2385,6 +2387,9 @@ CBlockIndex* CChainState::FindMostWorkChain() {
     do {
         CBlockIndex *pindexNew = nullptr;
 
+        // Iterate upon setBlockIndexCandidates and find if two entries have same nChainWork?
+        // Could add a log line here!
+
         // Find the best candidate header.
         {
             std::set<CBlockIndex*, CBlockIndexWorkComparator>::reverse_iterator it = setBlockIndexCandidates.rbegin();
@@ -3420,14 +3425,12 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
     // Block pointed to by the anchor
     CBlockIndex* bindex = mi->second;
 
-    // GetBlockProof works only on CBlockIndex while we have a CBlockHeader
+    // GetBlockProof works only on CBlockIndex while we have a CBlock
     CBlockIndex* aindex = new CBlockIndex(*panchor);
 
     // Each anchor contributes 1/10th of what a block contributes
     auto anchor_work = GetBlockProof(*aindex); anchor_work /= 2;
     delete aindex;
-
-    // std::cout << "Block pointed to by Anchor: " << bindex->ToString() << std::endl;
 
     // Update nChainWork of all descendants using a BFS over the tree
     // Traversal begins at the node that the anchor points to
@@ -3435,6 +3438,8 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
     Q.push_back(bindex);
 
     CBlockIndex* node;
+
+    // NOTE: Do I need to lock cs_main before updating the nChainWork?
 
     // Standard Breadth First Search
     while( ! Q.empty() ) {
@@ -3453,6 +3458,8 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
         // Insert all children at the end of the queue
         Q.insert(Q.end(), node->children.begin(), node->children.end());
     }
+
+    // Do I need to call UpdateTip() when an anchor is connected?
 
     // Let signal handlers know that a new anchor has been found
     // Used to propagate this anchor to the rest of the network
