@@ -2811,7 +2811,9 @@ CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
         // std::cout << "AddToBlockIndex: " << hash.ToString() << std::endl;
     }
     pindexNew->nTimeMax = (pindexNew->pprev ? std::max(pindexNew->pprev->nTimeMax, pindexNew->nTime) : pindexNew->nTime);
-    pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + 5 * GetBlockProof(*pindexNew);
+
+    int alpha = gArgs.GetArg("-anchorsperblock", DEFAULT_ANCHORS_PER_BLOCK);
+    pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + alpha * GetBlockProof(*pindexNew);
     pindexNew->RaiseValidity(BLOCK_VALID_TREE);
     if (pindexBestHeader == nullptr || pindexBestHeader->nChainWork < pindexNew->nChainWork)
         pindexBestHeader = pindexNew;
@@ -3428,8 +3430,8 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
     // GetBlockProof works only on CBlockIndex while we have a CBlock
     CBlockIndex* aindex = new CBlockIndex(*panchor);
 
-    // Each anchor contributes 1/10th of what a block contributes
-    auto anchor_work = GetBlockProof(*aindex); anchor_work /= 2;
+    // Each anchor contributes a chainweight of 2
+    auto anchor_work = GetBlockProof(*aindex);
     delete aindex;
 
     // Update nChainWork of all descendants using a BFS over the tree
