@@ -175,22 +175,15 @@ class GenerateAnchors(BitcoinTestFramework):
         cw = node.getblockheader(tmpl["previousblockhash"])["chainwork"]
         print("Chainwork, after : ", cw)
 
-        # Ask the other node, what the state is
-        node = self.nodes[1]
-
-        # print("Previous Block Hash: ", tmpl["previousblockhash"])
-        cw = node.getblockheader(tmpl["previousblockhash"])["chainwork"]
-        print("Chainwork, node 1: ", cw)
-
         node.generateanchor()
+        node.generateanchor()
+        node.generateanchor()
+        time.sleep(3)
 
-        # time.sleep(random.randint(1, 5))
-
-        # print("Previous Block Hash: ", tmpl["previousblockhash"])
         cw = node.getblockheader(tmpl["previousblockhash"])["chainwork"]
-        print("Chainwork, node 1: ", cw)
+        print("Chainwork, after : ", cw)
 
-        raise False
+        # raise False
 
 
 class CreateForksPy(BitcoinTestFramework):
@@ -292,6 +285,36 @@ class GenerateAnchorHashes(BitcoinTestFramework):
             time.sleep(0.5)
 
 
+class GenerateTxns(BitcoinTestFramework):
+
+    def set_test_params(self):
+        self.num_nodes = 3
+        self.setup_clean_chain = False
+
+    def run_test(self):
+        NODES = self.nodes
+        n1, n2, n3 = NODES[0], NODES[1], NODES[2]
+
+        self.log.info("Pre-mining a chain")
+
+        # Pre-mine a chain so everyone can spend some money
+        for node in NODES:
+            node.generate(101)
+            time.sleep(3)
+
+        # These are used to send transactions to
+        ADDRS = [n.getnewaddress() for n in NODES]
+        a1, a2, a3 = ADDRS[0], ADDRS[1], ADDRS[2]
+
+        n1.sendtoaddress(a2, 0.1)
+        n2.sendtoaddress(a3, 0.1)
+        n3.sendtoaddress(a1, 0.1)
+
+        n1.sendmany("", {a: 0.1 for a in ADDRS})
+        n2.sendmany("", {a: 0.1 for a in ADDRS})
+        n3.sendmany("", {a: 0.1 for a in ADDRS})
+
+        raise False
 
 if __name__ == '__main__':
     # SubmitBlocks().main()
@@ -299,4 +322,5 @@ if __name__ == '__main__':
     # GenerateAnchors().main()
     # CreateForksPy().main()
     # CreateForksCpp().main()
-    GenerateAnchorHashes().main()
+    # GenerateAnchorHashes().main()
+    GenerateTxns().main()
