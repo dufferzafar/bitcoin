@@ -316,6 +316,60 @@ class GenerateTxns(BitcoinTestFramework):
 
         raise False
 
+class GenerateLinks(BitcoinTestFramework):
+
+    def set_test_params(self):
+        self.num_nodes = 2
+        self.setup_clean_chain = False
+
+    def run_test(self):
+        node = self.nodes[0]
+
+        a = node.generate(1)[0]
+        a = node.getblockheader(a)
+        tmpl = node.getblocktemplate()
+
+        print("Previous Block Hash: ", tmpl["previousblockhash"])
+        print(node.getchaintips())
+        print("Chainwork, block 1: ", int(a["chainwork"], 16))
+
+
+        c = node.generate(1)[0]
+        c = node.getblockheader(c)
+        tmpl = node.getblocktemplate()
+
+        print("Previous Block Hash: ", tmpl["previousblockhash"])
+        print(node.getchaintips())
+        print("Chainwork, block 2: ", int(c["chainwork"], 16))
+
+        time.sleep(0.5)
+        d = node.generate(1)[0]
+        d = node.getblockheader(d)
+        tmpl = node.getblocktemplate()
+
+        print("Previous Block Hash: ", tmpl["previousblockhash"])
+        print(node.getchaintips())
+        print("Chainwork, block 3: ", int(d["chainwork"], 16))
+
+        time.sleep(0.5)
+        b = node.generatelink(1)[0]
+        b = node.getblockheader(b)
+        tmpl = node.getblocktemplate()
+
+        print("Previous Block Hash: ", tmpl["previousblockhash"])
+        print(node.getchaintips())
+        print("Chainwork, link 1: ", int(b["chainwork"], 16))
+
+        time.sleep(0.5)
+        e = node.generate(1)[0]
+        e = node.getblockheader(e)
+        tmpl = node.getblocktemplate()
+
+        print("Previous Block Hash: ", tmpl["previousblockhash"])
+        print(node.getchaintips())
+        print("Chainwork, block 4: ", int(e["chainwork"], 16))
+
+
 if __name__ == '__main__':
     # SubmitBlocks().main()
     # SubmitAnchors().main()

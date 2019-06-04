@@ -24,6 +24,7 @@ const char *GETHEADERS="getheaders";
 const char *TX="tx";
 const char *HEADERS="headers";
 const char *ANCHOR="anchor";
+const char *LINK="link";
 const char *BLOCK="block";
 const char *GETADDR="getaddr";
 const char *MEMPOOL="mempool";
@@ -73,6 +74,7 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::GETBLOCKTXN,
     NetMsgType::BLOCKTXN,
     NetMsgType::ANCHOR,
+    NetMsgType::LINK,
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes+ARRAYLEN(allNetMessageTypes));
 

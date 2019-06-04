@@ -17,7 +17,9 @@ class CCoinsViewCache;
 class CTxOut;
 
 /** Default for -anchorsperblock */
-static const unsigned int DEFAULT_ANCHORS_PER_BLOCK = 10;
+static const unsigned int DEFAULT_ANCHORS_PER_BLOCK = 0;
+/** Default for -linksperblock */
+static const unsigned int DEFAULT_LINKS_PER_BLOCK = 10;
 
 /** Default for -blockmaxweight, which controls the range of block weights the mining code will create **/
 static const unsigned int DEFAULT_BLOCK_MAX_WEIGHT = MAX_BLOCK_WEIGHT - 4000;

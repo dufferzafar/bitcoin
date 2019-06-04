@@ -138,6 +138,41 @@ UniValue generateAnchor(std::shared_ptr<CReserveScript> coinbaseScript)
     return blockHashes;
 }
 
+UniValue generateLink(std::shared_ptr<CReserveScript> coinbaseScript)
+{
+    std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript, true, true));
+
+    if (!pblocktemplate.get())
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new link!");
+
+    UniValue blockHashes(UniValue::VARR);
+
+    unsigned int nExtraNonce = 0;
+    CBlock *pblock = &pblocktemplate->block;
+    {
+        LOCK(cs_main);
+        IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
+    }
+
+    while (!CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus())) {
+        ++pblock->nNonce;
+    }
+    std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
+
+    LogPrintf("%s: link=%s parent_sha=%s tip=%s chainwork=%.4f\n", __func__,
+              pblock->GetHash().ToString(), pblock->hashPrevBlock.ToString(),
+              chainActive.Tip()->GetBlockHash().ToString(),
+              chainActive.Tip()->nChainWork.getdouble());
+
+    if (!ProcessNewLink(Params(), shared_pblock))
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
+
+    // mapAnchors[pblock->GetHash()] = std::make_pair(pblock->hashPrevBlock, pblock->nBits);
+
+    blockHashes.push_back(pblock->GetHash().GetHex());
+    return blockHashes;
+}
+
 UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGenerate, uint64_t nMaxTries, bool keepScript)
 {
     static const int nInnerLoopCount = 0x10000;

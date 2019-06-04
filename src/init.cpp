@@ -355,6 +355,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-maxmempool=<n>", strprintf(_("Keep the transaction memory pool below <n> megabytes (default: %u)"), DEFAULT_MAX_MEMPOOL_SIZE));
     strUsage += HelpMessageOpt("-mempoolexpiry=<n>", strprintf(_("Do not keep transactions in the mempool longer than <n> hours (default: %u)"), DEFAULT_MEMPOOL_EXPIRY));
     strUsage += HelpMessageOpt("-anchorsperblock=<n>", strprintf(_("<n> anchors are generated per block, used to scale the chainweight of blocks / anchors (default: %u)"), DEFAULT_ANCHORS_PER_BLOCK));
+    strUsage += HelpMessageOpt("-linksperblock=<n>", strprintf(_("<n> links are generated per block, used to scale the chainweight of blocks / links (default: %u)"), DEFAULT_LINKS_PER_BLOCK));
     if (showDebug) {
         strUsage += HelpMessageOpt("-minimumchainwork=<hex>", strprintf("Minimum work assumed to exist on a valid chain in hex (default: %s, testnet: %s)", defaultChainParams->GetConsensus().nMinimumChainWork.GetHex(), testnetChainParams->GetConsensus().nMinimumChainWork.GetHex()));
     }

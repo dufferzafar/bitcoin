@@ -88,6 +88,13 @@ protected:
     virtual void AnchorConnected(const std::shared_ptr<const CBlock> &anchor) {}
 
     /**
+     * Notifies listeners of an link being connected.
+     *
+     * Called on a background thread ?
+     */
+    virtual void LinkConnected(const std::shared_ptr<const CBlock> &link) {}
+
+    /**
      * Notifies listeners of a block being connected.
      * Provides a vector of transactions evicted from the mempool as a result.
      *
@@ -160,6 +167,7 @@ public:
     void UpdatedBlockTip(const CBlockIndex *, const CBlockIndex *, bool fInitialDownload);
     void TransactionAddedToMempool(const CTransactionRef &);
     void AnchorConnected(const std::shared_ptr<const CBlock> &);
+    void LinkConnected(const std::shared_ptr<const CBlock> &);
     void BlockConnected(const std::shared_ptr<const CBlock> &, const CBlockIndex *pindex, const std::shared_ptr<const std::vector<CTransactionRef>> &);
     void BlockDisconnected(const std::shared_ptr<const CBlock> &);
     void SetBestChain(const CBlockLocator &);

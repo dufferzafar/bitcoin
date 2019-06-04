@@ -133,6 +133,12 @@ extern const char *HEADERS;
  */
 extern const char *ANCHOR;
 /**
+ * The link message transmits a single serialized link.
+ * Sent whenever an link is received
+ * This doesn't follow the semantics of other bitcoin protocol messages.
+ */
+extern const char *LINK;
+/**
  * The block message transmits a single serialized block.
  * @see https://bitcoin.org/en/developer-reference#block
  */

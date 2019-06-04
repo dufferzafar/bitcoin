@@ -3423,6 +3423,38 @@ UniValue generateanchor(const JSONRPCRequest& request)
     return generateAnchor(coinbase_script);
 }
 
+UniValue generatelink(const JSONRPCRequest& request)
+{
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    if (request.fHelp || request.params.size() > 1) {
+        throw std::runtime_error(
+            "generatelink\n"
+            "\nGenerate a new link (that pays to an address in the wallet).\n"
+            "\nResult:\n"
+            "[ blockhashes ]     (array) hashes of links generated\n"
+        );
+    }
+
+    std::shared_ptr<CReserveScript> coinbase_script;
+    pwallet->GetScriptForMining(coinbase_script);
+
+    // If the keypool is exhausted, no script is returned at all.  Catch this.
+    if (!coinbase_script) {
+        throw JSONRPCError(RPC_WALLET_KEYPOOL_RAN_OUT, "Error: Keypool ran out, please call keypoolrefill first");
+    }
+
+    //throw an error if no script was provided
+    if (coinbase_script->reserveScript.empty()) {
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "No coinbase script available");
+    }
+
+    return generateLink(coinbase_script);
+}
 
 
 UniValue generate(const JSONRPCRequest& request)
@@ -3624,6 +3656,7 @@ static const CRPCCommand commands[] =
 
     { "generating",         "generate",                 &generate,                 {"nblocks","maxtries"} },
     { "generating",         "generateanchor",           &generateanchor,           {} },
+    { "generating",         "generatelink",             &generatelink,             {} },
 };
 
 void RegisterWalletRPCCommands(CRPCTable &t)

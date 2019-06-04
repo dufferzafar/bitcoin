@@ -15,6 +15,9 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
 /** Generate anchors */
 UniValue generateAnchor(std::shared_ptr<CReserveScript> coinbaseScript);
 
+/** Generate links */
+UniValue generateLink(std::shared_ptr<CReserveScript> coinbaseScript);
+
 /** Check bounds on a command line confirm target */
 unsigned int ParseConfirmTarget(const UniValue& value);
 

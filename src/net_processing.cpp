@@ -823,6 +823,22 @@ void PeerLogicValidation::AnchorConnected(const std::shared_ptr<const CBlock>& p
 
 }
 
+void PeerLogicValidation::LinkConnected(const std::shared_ptr<const CBlock>& plink) {
+
+    // std::cout << "PeerLogicValidation::LinkConnected()" << std::endl;
+
+    const CNetMsgMaker msgMaker(PROTOCOL_VERSION);
+
+    // Forward this link to all neighbors
+    connman->ForEachNode([this, &plink, &msgMaker](CNode* pnode) {
+        connman->PushMessage(pnode, msgMaker.Make(NetMsgType::LINK, *plink));
+
+        LogPrint(BCLog::NET, "%s sending link %s to peer=%d\n", "PeerLogicValidation::LinkConnected",
+                    plink->GetHash().ToString(), pnode->GetId());
+    });
+
+}
+
 void PeerLogicValidation::BlockConnected(const std::shared_ptr<const CBlock>& pblock, const CBlockIndex* pindex, const std::vector<CTransactionRef>& vtxConflicted) {
     LOCK(g_cs_orphans);
 
@@ -2690,6 +2706,14 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
             ProcessNewAnchor(chainparams, panchor);
         }
+    }
+
+    else if (strCommand == NetMsgType::LINK)
+    {
+        std::shared_ptr<CBlock> plink = std::make_shared<CBlock>();
+        vRecv >> *plink;
+        LogPrint(BCLog::NET, "received link %s from peer=%d\n", plink->GetHash().ToString(), pfrom->GetId());
+        ProcessNewLink(chainparams, plink);
     }
 
     else if (strCommand == NetMsgType::GETADDR)

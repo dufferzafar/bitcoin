@@ -157,8 +157,8 @@ public:
 
     bool ActivateBestChain(CValidationState &state, const CChainParams& chainparams, std::shared_ptr<const CBlock> pblock);
 
-    bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex);
-    bool AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex, bool fRequested, const CDiskBlockPos* dbp, bool* fNewBlock);
+    bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex, bool isLink = false);
+    bool AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex, bool fRequested, const CDiskBlockPos* dbp, bool* fNewBlock, bool isLink = false);
 
     // Block (dis)connection on a given view:
     DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* pindex, CCoinsViewCache& view);
@@ -185,7 +185,7 @@ private:
     bool ActivateBestChainStep(CValidationState& state, const CChainParams& chainparams, CBlockIndex* pindexMostWork, const std::shared_ptr<const CBlock>& pblock, bool& fInvalidFound, ConnectTrace& connectTrace);
     bool ConnectTip(CValidationState& state, const CChainParams& chainparams, CBlockIndex* pindexNew, const std::shared_ptr<const CBlock>& pblock, ConnectTrace& connectTrace, DisconnectedBlockTransactions &disconnectpool);
 
-    CBlockIndex* AddToBlockIndex(const CBlockHeader& block);
+    CBlockIndex* AddToBlockIndex(const CBlockHeader& block, bool isLink = false);
     /** Create a new block index entry for a given block hash */
     CBlockIndex * InsertBlockIndex(const uint256& hash);
     void CheckBlockIndex(const Consensus::Params& consensusParams);
@@ -2782,7 +2782,7 @@ bool ResetBlockFailureFlags(CBlockIndex *pindex) {
     return g_chainstate.ResetBlockFailureFlags(pindex);
 }
 
-CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
+CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block, bool isLink)
 {
     // Check for duplicate
     uint256 hash = block.GetHash();
@@ -2813,7 +2813,12 @@ CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
     pindexNew->nTimeMax = (pindexNew->pprev ? std::max(pindexNew->pprev->nTimeMax, pindexNew->nTime) : pindexNew->nTime);
 
     int alpha = gArgs.GetArg("-anchorsperblock", DEFAULT_ANCHORS_PER_BLOCK);
-    pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + alpha * GetBlockProof(*pindexNew);
+    if (!isLink) {
+        int beta = gArgs.GetArg("-linksperblock", DEFAULT_LINKS_PER_BLOCK);
+        pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + alpha * GetBlockProof(*pindexNew) + beta * GetBlockProof(*pindexNew);
+    } else {
+        pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + GetBlockProof(*pindexNew);
+    }
     pindexNew->RaiseValidity(BLOCK_VALID_TREE);
     if (pindexBestHeader == nullptr || pindexBestHeader->nChainWork < pindexNew->nChainWork)
         pindexBestHeader = pindexNew;
@@ -3229,7 +3234,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     return true;
 }
 
-bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex)
+bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex, bool isLink)
 {
     AssertLockHeld(cs_main);
     // Check for duplicate
@@ -3278,7 +3283,7 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
         }
     }
     if (pindex == nullptr)
-        pindex = AddToBlockIndex(block);
+        pindex = AddToBlockIndex(block, isLink);
 
     if (ppindex)
         *ppindex = pindex;
@@ -3329,7 +3334,7 @@ static CDiskBlockPos SaveBlockToDisk(const CBlock& block, int nHeight, const CCh
 }
 
 /** Store block on disk. If dbp is non-nullptr, the file is known to already reside on disk */
-bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex, bool fRequested, const CDiskBlockPos* dbp, bool* fNewBlock)
+bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex, bool fRequested, const CDiskBlockPos* dbp, bool* fNewBlock, bool isLink)
 {
     const CBlock& block = *pblock;
 
@@ -3339,7 +3344,7 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
     CBlockIndex *pindexDummy = nullptr;
     CBlockIndex *&pindex = ppindex ? *ppindex : pindexDummy;
 
-    if (!AcceptBlockHeader(block, state, chainparams, &pindex))
+    if (!AcceptBlockHeader(block, state, chainparams, &pindex, isLink))
         return false;
 
     // Try to process all requested blocks that we don't have, but only
@@ -3468,6 +3473,53 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
     GetMainSignals().AnchorConnected(panchor);
 
     // Receiving an anchor may update the best chain
+    CValidationState state;
+    if (!g_chainstate.ActivateBestChain(state, chainparams, nullptr))
+        return error("%s: ActivateBestChain failed", __func__);
+
+    return true;
+}
+
+// Find the block pointed to by the link and update its ChainWork
+bool ProcessNewLink(const CChainParams& chainparams, const std::shared_ptr<const CBlock> plink)
+{
+    auto mi = mapBlockIndex.find(plink->hashPrevBlock);
+
+    // Return if we haven't heard of the block pointed by link
+    if (mi == mapBlockIndex.end())
+        return false;
+
+    LogPrintf("%s: link=%s parent_sha=%s tip=%s chainwork=%.4f\n", __func__,
+              plink->GetHash().ToString(), plink->hashPrevBlock.ToString(),
+              chainActive.Tip()->GetBlockHash().ToString(),
+              chainActive.Tip()->nChainWork.getdouble());
+
+    AssertLockNotHeld(cs_main);
+
+    {
+        CBlockIndex *pindex = nullptr;
+        bool fNewBlock = false;
+        CValidationState state;
+        // Ensure that CheckBlock() passes before calling AcceptBlock, as
+        // belt-and-suspenders.
+        bool ret = CheckBlock(*plink, state, chainparams.GetConsensus());
+
+        LOCK(cs_main);
+
+        if (ret) {
+            // Store to disk
+            ret = g_chainstate.AcceptBlock(plink, state, chainparams, &pindex, false, nullptr, &fNewBlock, true);
+        }
+        if (!ret) {
+            // GetMainSignals().BlockChecked(*pblock, state);
+            return error("%s: AcceptBlock FAILED (%s)", __func__, state.GetDebugMessage());
+        }
+    }
+    // Let signal handlers know that a new link has been found
+    // Used to propagate this link to the rest of the network
+    GetMainSignals().LinkConnected(plink);
+
+    // Receiving an link may update the best chain
     CValidationState state;
     if (!g_chainstate.ActivateBestChain(state, chainparams, nullptr))
         return error("%s: ActivateBestChain failed", __func__);
