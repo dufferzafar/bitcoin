@@ -3515,6 +3515,8 @@ bool ProcessNewLink(const CChainParams& chainparams, const std::shared_ptr<const
             return error("%s: AcceptBlock FAILED (%s)", __func__, state.GetDebugMessage());
         }
     }
+
+    NotifyHeaderTip();
     // Let signal handlers know that a new link has been found
     // Used to propagate this link to the rest of the network
     GetMainSignals().LinkConnected(plink);
