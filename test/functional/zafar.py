@@ -358,6 +358,15 @@ class GenerateLinks(BitcoinTestFramework):
 
         print("Previous Block Hash: ", tmpl["previousblockhash"])
         print(node.getchaintips())
+        print("Chainwork, block 4: ", int(d["chainwork"], 16))
+
+        time.sleep(0.5)
+        b = node.generatelink(1)[0]
+        b = node.getblockheader(b)
+        tmpl = node.getblocktemplate()
+
+        print("Previous Block Hash: ", tmpl["previousblockhash"])
+        print(node.getchaintips())
         print("Chainwork, link 1: ", int(b["chainwork"], 16))
 
         time.sleep(0.5)
@@ -367,8 +376,9 @@ class GenerateLinks(BitcoinTestFramework):
 
         print("Previous Block Hash: ", tmpl["previousblockhash"])
         print(node.getchaintips())
-        print("Chainwork, block 4: ", int(e["chainwork"], 16))
+        print("Chainwork, link 2: ", int(e["chainwork"], 16))
 
+        raise False
 
 if __name__ == '__main__':
     # SubmitBlocks().main()
@@ -377,4 +387,5 @@ if __name__ == '__main__':
     # CreateForksPy().main()
     # CreateForksCpp().main()
     # GenerateAnchorHashes().main()
-    GenerateTxns().main()
+    GenerateLinks().main()
+    # GenerateTxns().main()

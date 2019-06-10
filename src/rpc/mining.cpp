@@ -164,7 +164,7 @@ UniValue generateLink(std::shared_ptr<CReserveScript> coinbaseScript)
               chainActive.Tip()->GetBlockHash().ToString(),
               chainActive.Tip()->nChainWork.getdouble());
 
-    if (!ProcessNewLink(Params(), shared_pblock))
+    if (!ProcessNewLink(Params(), shared_pblock, nullptr))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
 
     // mapAnchors[pblock->GetHash()] = std::make_pair(pblock->hashPrevBlock, pblock->nBits);

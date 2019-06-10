@@ -226,7 +226,7 @@ static const uint64_t MIN_DISK_SPACE_FOR_BLOCK_FILES = 550 * 1024 * 1024;
 bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<const CBlock> panchor);
 
 // Update the ChainWork of block pointed to by the Link
-bool ProcessNewLink(const CChainParams& chainparams, const std::shared_ptr<const CBlock> plink);
+bool ProcessNewLink(const CChainParams& chainparams, const std::shared_ptr<const CBlock> plink, bool* fNewLink);
 
 /**
  * Process an incoming block. This only returns after the best known valid

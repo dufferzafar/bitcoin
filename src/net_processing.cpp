@@ -2710,10 +2710,11 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
     else if (strCommand == NetMsgType::LINK)
     {
+        bool fNewLink = false;
         std::shared_ptr<CBlock> plink = std::make_shared<CBlock>();
         vRecv >> *plink;
         LogPrint(BCLog::NET, "received link %s from peer=%d\n", plink->GetHash().ToString(), pfrom->GetId());
-        ProcessNewLink(chainparams, plink);
+        ProcessNewLink(chainparams, plink, &fNewLink);
     }
 
     else if (strCommand == NetMsgType::GETADDR)

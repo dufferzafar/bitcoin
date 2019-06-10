@@ -3481,13 +3481,16 @@ bool ProcessNewAnchor(const CChainParams& chainparams, const std::shared_ptr<con
 }
 
 // Find the block pointed to by the link and update its ChainWork
-bool ProcessNewLink(const CChainParams& chainparams, const std::shared_ptr<const CBlock> plink)
+bool ProcessNewLink(const CChainParams& chainparams, const std::shared_ptr<const CBlock> plink, bool *fNewLink)
 {
     auto mi = mapBlockIndex.find(plink->hashPrevBlock);
+    auto mi2 = mapBlockIndex.find(plink->GetHash());
 
     // Return if we haven't heard of the block pointed by link
-    if (mi == mapBlockIndex.end())
+    if (mi == mapBlockIndex.end() || mi2 != mapBlockIndex.end())
         return false;
+
+
 
     LogPrintf("%s: link=%s parent_sha=%s tip=%s chainwork=%.4f\n", __func__,
               plink->GetHash().ToString(), plink->hashPrevBlock.ToString(),
@@ -3498,7 +3501,7 @@ bool ProcessNewLink(const CChainParams& chainparams, const std::shared_ptr<const
 
     {
         CBlockIndex *pindex = nullptr;
-        bool fNewBlock = false;
+        if (fNewLink) *fNewLink = false;
         CValidationState state;
         // Ensure that CheckBlock() passes before calling AcceptBlock, as
         // belt-and-suspenders.
@@ -3508,10 +3511,10 @@ bool ProcessNewLink(const CChainParams& chainparams, const std::shared_ptr<const
 
         if (ret) {
             // Store to disk
-            ret = g_chainstate.AcceptBlock(plink, state, chainparams, &pindex, false, nullptr, &fNewBlock, true);
+            ret = g_chainstate.AcceptBlock(plink, state, chainparams, &pindex, false, nullptr, fNewLink, true);
         }
         if (!ret) {
-            // GetMainSignals().BlockChecked(*pblock, state);
+            GetMainSignals().BlockChecked(*plink, state);
             return error("%s: AcceptBlock FAILED (%s)", __func__, state.GetDebugMessage());
         }
     }
@@ -3523,7 +3526,7 @@ bool ProcessNewLink(const CChainParams& chainparams, const std::shared_ptr<const
 
     // Receiving an link may update the best chain
     CValidationState state;
-    if (!g_chainstate.ActivateBestChain(state, chainparams, nullptr))
+    if (!g_chainstate.ActivateBestChain(state, chainparams, plink))
         return error("%s: ActivateBestChain failed", __func__);
 
     return true;
